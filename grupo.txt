@@ -1,0 +1,11 @@
+Lider: Cecilia Montes - Computacion
+
+Integrantes:
+Ariel Arias - Computacion
+Cesar Mera - Computacion
+
+Se escogio a Lider ya que consideramos que es alguien que nos ayuda a trabajar rapido y eficiente.
+
+Division de tareas:
+Codigo en general - Cecilia y Ariel
+Manejo de Archivos - Cesar
