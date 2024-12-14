@@ -339,19 +339,26 @@ void crearProfesor() {
         return;
     }
 
+    while (getchar() != '\n'); 
+
     // Ingresar materias que puede dictar
     int j = 0;
-    while (1) {
+    while (j < MAX_MATERIAS) {
         printf("Ingrese la materia %d (ingrese '0' para terminar): ", j + 1);
-        getchar(); // Limpiar el salto de línea dejado por el scanf previo
         fgets(p.materias[j], MAX_CODIGO, stdin);
 
         // Eliminar el salto de línea al final de la entrada
-        p.materias[j][strcspn(p.materias[j], "\n")] = '\0'; 
+        p.materias[j][strcspn(p.materias[j], "\n")] = '\0';
 
         // Si se ingresa '0', se sale del ciclo
         if (strcmp(p.materias[j], "0") == 0) {
             break;
+        }
+
+        // Validar que no se ingresen cadenas vacías
+        if (strlen(p.materias[j]) == 0) {
+            printf("Entrada vacía. Por favor, ingrese un código de materia válido.\n");
+            continue;
         }
 
         j++;  // Aumentar el índice de materias
@@ -362,8 +369,14 @@ void crearProfesor() {
         }
     }
 
-    profesores[num_profesores++] = p;
-    printf("Profesor creado con éxito.\n");
+    // Verificar si no se ingresaron materias
+    if (j == 0) {
+        printf("No se registraron materias para este profesor.\n");
+    } else {
+        profesores[num_profesores++] = p;
+        printf("Profesor creado con éxito.\n");
+    }
+
 }
 
 
