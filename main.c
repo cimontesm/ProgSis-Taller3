@@ -12,13 +12,15 @@
 #define MAX_NOMBRE 100
 
 // Estructuras
-typedef struct {
+typedef struct
+{
     char nombre[MAX_NOMBRE];
     char codigo[MAX_CODIGO];
     int estado; // 1 Activo, 0 Inactivo
 } Materia;
 
-typedef struct {
+typedef struct
+{
     char matricula[MAX_CODIGO];
     char nombres[MAX_NOMBRE];
     char apellidos[MAX_NOMBRE];
@@ -27,17 +29,19 @@ typedef struct {
     int estado; // 1 Activo, 0 Inactivo
 } Estudiante;
 
-typedef struct {
+typedef struct
+{
     char cc[MAX_CODIGO]; // C.C. (cédula de ciudadanía)
     char nombres[MAX_NOMBRE];
     char apellidos[MAX_NOMBRE];
     char usuario[MAX_USUARIO];
     char clave[MAX_USUARIO];
-    int estado; // 1 Activo, 0 Inactivo
+    int estado;                              // 1 Activo, 0 Inactivo
     char materias[MAX_MATERIAS][MAX_CODIGO]; // Materias que puede dictar
 } Profesor;
 
-typedef struct {
+typedef struct
+{
     char codigo[MAX_CODIGO];
     Materia materia;
     Profesor profesor;
@@ -59,46 +63,62 @@ int num_profesores = 0;
 int num_cursos = 0;
 
 // Funciones auxiliares
-int verificarMateriaExistente(char *codigo) {
-    for (int i = 0; i < num_materias; i++) {
-        if (strcmp(materias[i].codigo, codigo) == 0) {
+int verificarMateriaExistente(char *codigo)
+{
+    for (int i = 0; i < num_materias; i++)
+    {
+        if (strcmp(materias[i].codigo, codigo) == 0)
+        {
             return 1; // Materia ya existe
         }
     }
     return 0;
 }
 
-int verificarEstudianteExistente(char *matricula, char *usuario) {
-    for (int i = 0; i < num_estudiantes; i++) {
-        if (strcmp(estudiantes[i].matricula, matricula) == 0 || strcmp(estudiantes[i].usuario, usuario) == 0) {
+int verificarEstudianteExistente(char *matricula, char *usuario)
+{
+    for (int i = 0; i < num_estudiantes; i++)
+    {
+        if (strcmp(estudiantes[i].matricula, matricula) == 0 || strcmp(estudiantes[i].usuario, usuario) == 0)
+        {
             return 1; // Estudiante ya existe
         }
     }
     return 0;
 }
 
-int verificarProfesorExistente(char *cc, char *usuario) {
-    for (int i = 0; i < num_profesores; i++) {
-        if (strcmp(profesores[i].cc, cc) == 0 || strcmp(profesores[i].usuario, usuario) == 0) {
+int verificarProfesorExistente(char *cc, char *usuario)
+{
+    for (int i = 0; i < num_profesores; i++)
+    {
+        if (strcmp(profesores[i].cc, cc) == 0 || strcmp(profesores[i].usuario, usuario) == 0)
+        {
             return 1; // Profesor ya existe
         }
     }
     return 0;
 }
 
-int verificarCursoExistente(char *codigo) {
-    for (int i = 0; i < num_cursos; i++) {
-        if (strcmp(cursos[i].codigo, codigo) == 0) {
+int verificarCursoExistente(char *codigo)
+{
+    for (int i = 0; i < num_cursos; i++)
+    {
+        if (strcmp(cursos[i].codigo, codigo) == 0)
+        {
             return 1; // Curso ya existe
         }
     }
     return 0;
 }
 
-int verificarEstudianteEnCurso(char *matricula) {
-    for (int i = 0; i < num_cursos; i++) {
-        for (int j = 0; j < cursos[i].num_estudiantes; j++) {
-            if (strcmp(cursos[i].estudiantes[j].matricula, matricula) == 0) {
+int verificarEstudianteEnCurso(char *matricula)
+{
+    for (int i = 0; i < num_cursos; i++)
+    {
+        for (int j = 0; j < cursos[i].num_estudiantes; j++)
+        {
+            if (strcmp(cursos[i].estudiantes[j].matricula, matricula) == 0)
+            {
                 return 1; // Estudiante está en curso
             }
         }
@@ -106,9 +126,12 @@ int verificarEstudianteEnCurso(char *matricula) {
     return 0;
 }
 
-int verificarProfesorEnCurso(char *cc) {
-    for (int i = 0; i < num_cursos; i++) {
-        if (strcmp(cursos[i].profesor.cc, cc) == 0) {
+int verificarProfesorEnCurso(char *cc)
+{
+    for (int i = 0; i < num_cursos; i++)
+    {
+        if (strcmp(cursos[i].profesor.cc, cc) == 0)
+        {
             return 1; // Profesor tiene un curso en proceso
         }
     }
@@ -116,7 +139,8 @@ int verificarProfesorEnCurso(char *cc) {
 }
 
 // Funciones de menú
-void mostrarMenu() {
+void mostrarMenu()
+{
     printf("\nMenú:\n");
     printf("a. Materia\n");
     printf("b. Estudiante\n");
@@ -127,8 +151,10 @@ void mostrarMenu() {
 }
 
 // Funciones para Materias
-void crearMateria() {
-    if (num_materias >= MAX_MATERIAS) {
+void crearMateria()
+{
+    if (num_materias >= MAX_MATERIAS)
+    {
         printf("No se pueden agregar más materias.\n");
         return;
     }
@@ -144,7 +170,8 @@ void crearMateria() {
     fgets(m.codigo, MAX_CODIGO, stdin);
     m.codigo[strcspn(m.codigo, "\n")] = '\0'; // Eliminar salto de línea
 
-    if (verificarMateriaExistente(m.codigo)) {
+    if (verificarMateriaExistente(m.codigo))
+    {
         printf("La materia con ese código ya existe.\n");
         return;
     }
@@ -152,7 +179,8 @@ void crearMateria() {
     printf("Ingrese el estado (1 para Activo, 0 para Inactivo): ");
     scanf("%d", &m.estado);
 
-    if (m.estado != 1 && m.estado != 0) {
+    if (m.estado != 1 && m.estado != 0)
+    {
         printf("Estado inválido.\n");
         return;
     }
@@ -161,7 +189,8 @@ void crearMateria() {
     printf("Materia creada con éxito.\n");
 }
 
-void editarMateria() {
+void editarMateria()
+{
     char codigo[MAX_CODIGO];
     printf("\nEditar Materia\n");
     printf("Ingrese el código de la materia a editar: ");
@@ -170,19 +199,23 @@ void editarMateria() {
     codigo[strcspn(codigo, "\n")] = '\0'; // Eliminar salto de línea
 
     int idx = -1;
-    for (int i = 0; i < num_materias; i++) {
-        if (strcmp(materias[i].codigo, codigo) == 0) {
+    for (int i = 0; i < num_materias; i++)
+    {
+        if (strcmp(materias[i].codigo, codigo) == 0)
+        {
             idx = i;
             break;
         }
     }
 
-    if (idx == -1) {
+    if (idx == -1)
+    {
         printf("Materia no encontrada.\n");
         return;
     }
 
-    if (verificarCursoExistente(codigo)) {
+    if (verificarCursoExistente(codigo))
+    {
         printf("No se puede inactivar la materia porque tiene un curso en proceso.\n");
         return;
     }
@@ -190,7 +223,8 @@ void editarMateria() {
     printf("Ingrese el nuevo estado (1 para Activo, 0 para Inactivo): ");
     scanf("%d", &materias[idx].estado);
 
-    if (materias[idx].estado != 1 && materias[idx].estado != 0) {
+    if (materias[idx].estado != 1 && materias[idx].estado != 0)
+    {
         printf("Estado inválido.\n");
         return;
     }
@@ -199,8 +233,10 @@ void editarMateria() {
 }
 
 // Funciones para Estudiantes
-void crearEstudiante() {
-    if (num_estudiantes >= MAX_ESTUDIANTES) {
+void crearEstudiante()
+{
+    if (num_estudiantes >= MAX_ESTUDIANTES)
+    {
         printf("No se pueden agregar más estudiantes.\n");
         return;
     }
@@ -220,7 +256,8 @@ void crearEstudiante() {
     fgets(e.matricula, MAX_CODIGO, stdin);
     e.matricula[strcspn(e.matricula, "\n")] = '\0'; // Eliminar salto de línea
 
-    if (verificarEstudianteExistente(e.matricula, "")) {
+    if (verificarEstudianteExistente(e.matricula, ""))
+    {
         printf("La matrícula ya existe.\n");
         return;
     }
@@ -229,7 +266,8 @@ void crearEstudiante() {
     fgets(e.usuario, MAX_USUARIO, stdin);
     e.usuario[strcspn(e.usuario, "\n")] = '\0'; // Eliminar salto de línea
 
-    if (verificarEstudianteExistente("", e.usuario)) {
+    if (verificarEstudianteExistente("", e.usuario))
+    {
         printf("El usuario ya existe.\n");
         return;
     }
@@ -241,7 +279,8 @@ void crearEstudiante() {
     printf("Ingrese el estado (1 para Activo, 0 para Inactivo): ");
     scanf("%d", &e.estado);
 
-    if (e.estado != 1 && e.estado != 0) {
+    if (e.estado != 1 && e.estado != 0)
+    {
         printf("Estado inválido.\n");
         return;
     }
@@ -250,7 +289,8 @@ void crearEstudiante() {
     printf("Estudiante creado con éxito.\n");
 }
 
-void editarEstudiante() {
+void editarEstudiante()
+{
     char matricula[MAX_CODIGO];
     printf("\nEditar Estudiante\n");
     printf("Ingrese la matrícula del estudiante a editar: ");
@@ -259,19 +299,23 @@ void editarEstudiante() {
     matricula[strcspn(matricula, "\n")] = '\0'; // Eliminar salto de línea
 
     int idx = -1;
-    for (int i = 0; i < num_estudiantes; i++) {
-        if (strcmp(estudiantes[i].matricula, matricula) == 0) {
+    for (int i = 0; i < num_estudiantes; i++)
+    {
+        if (strcmp(estudiantes[i].matricula, matricula) == 0)
+        {
             idx = i;
             break;
         }
     }
 
-    if (idx == -1) {
+    if (idx == -1)
+    {
         printf("Estudiante no encontrado.\n");
         return;
     }
 
-    if (verificarEstudianteEnCurso(matricula)) {
+    if (verificarEstudianteEnCurso(matricula))
+    {
         printf("No se puede inactivar al estudiante porque tiene un curso en proceso.\n");
         return;
     }
@@ -283,7 +327,8 @@ void editarEstudiante() {
     printf("Ingrese el nuevo estado (1 para Activo, 0 para Inactivo): ");
     scanf("%d", &estudiantes[idx].estado);
 
-    if (estudiantes[idx].estado != 1 && estudiantes[idx].estado != 0) {
+    if (estudiantes[idx].estado != 1 && estudiantes[idx].estado != 0)
+    {
         printf("Estado inválido.\n");
         return;
     }
@@ -292,8 +337,10 @@ void editarEstudiante() {
 }
 
 // Funciones para Profesores
-void crearProfesor() {
-    if (num_profesores >= MAX_PROFESORES) {
+void crearProfesor()
+{
+    if (num_profesores >= MAX_PROFESORES)
+    {
         printf("No se pueden agregar más profesores.\n");
         return;
     }
@@ -313,7 +360,8 @@ void crearProfesor() {
     fgets(p.cc, MAX_CODIGO, stdin);
     p.cc[strcspn(p.cc, "\n")] = '\0'; // Eliminar salto de línea
 
-    if (verificarProfesorExistente(p.cc, "")) {
+    if (verificarProfesorExistente(p.cc, ""))
+    {
         printf("El profesor con esa C.C. ya existe.\n");
         return;
     }
@@ -322,7 +370,8 @@ void crearProfesor() {
     fgets(p.usuario, MAX_USUARIO, stdin);
     p.usuario[strcspn(p.usuario, "\n")] = '\0'; // Eliminar salto de línea
 
-    if (verificarProfesorExistente("", p.usuario)) {
+    if (verificarProfesorExistente("", p.usuario))
+    {
         printf("El usuario ya existe.\n");
         return;
     }
@@ -334,16 +383,19 @@ void crearProfesor() {
     printf("Ingrese el estado (1 para Activo, 0 para Inactivo): ");
     scanf("%d", &p.estado);
 
-    if (p.estado != 1 && p.estado != 0) {
+    if (p.estado != 1 && p.estado != 0)
+    {
         printf("Estado inválido.\n");
         return;
     }
 
-    while (getchar() != '\n'); 
+    while (getchar() != '\n')
+        ;
 
     // Ingresar materias que puede dictar
     int j = 0;
-    while (j < MAX_MATERIAS) {
+    while (j < MAX_MATERIAS)
+    {
         printf("Ingrese la materia %d (ingrese '0' para terminar): ", j + 1);
         fgets(p.materias[j], MAX_CODIGO, stdin);
 
@@ -351,36 +403,41 @@ void crearProfesor() {
         p.materias[j][strcspn(p.materias[j], "\n")] = '\0';
 
         // Si se ingresa '0', se sale del ciclo
-        if (strcmp(p.materias[j], "0") == 0) {
+        if (strcmp(p.materias[j], "0") == 0)
+        {
             break;
         }
 
         // Validar que no se ingresen cadenas vacías
-        if (strlen(p.materias[j]) == 0) {
+        if (strlen(p.materias[j]) == 0)
+        {
             printf("Entrada vacía. Por favor, ingrese un código de materia válido.\n");
             continue;
         }
 
-        j++;  // Aumentar el índice de materias
+        j++; // Aumentar el índice de materias
 
-        if (j >= MAX_MATERIAS) {  // Limitar el número de materias
+        if (j >= MAX_MATERIAS)
+        { // Limitar el número de materias
             printf("Máximo de materias alcanzado.\n");
             break;
         }
     }
 
     // Verificar si no se ingresaron materias
-    if (j == 0) {
+    if (j == 0)
+    {
         printf("No se registraron materias para este profesor.\n");
-    } else {
+    }
+    else
+    {
         profesores[num_profesores++] = p;
         printf("Profesor creado con éxito.\n");
     }
-
 }
 
-
-void editarProfesor() {
+void editarProfesor()
+{
     char cc[MAX_CODIGO];
     printf("\nEditar Profesor\n");
     printf("Ingrese la C.C. del profesor a editar: ");
@@ -389,19 +446,23 @@ void editarProfesor() {
     cc[strcspn(cc, "\n")] = '\0'; // Eliminar salto de línea
 
     int idx = -1;
-    for (int i = 0; i < num_profesores; i++) {
-        if (strcmp(profesores[i].cc, cc) == 0) {
+    for (int i = 0; i < num_profesores; i++)
+    {
+        if (strcmp(profesores[i].cc, cc) == 0)
+        {
             idx = i;
             break;
         }
     }
 
-    if (idx == -1) {
+    if (idx == -1)
+    {
         printf("Profesor no encontrado.\n");
         return;
     }
 
-    if (verificarProfesorEnCurso(cc)) {
+    if (verificarProfesorEnCurso(cc))
+    {
         printf("No se puede inactivar al profesor porque tiene un curso en proceso.\n");
         return;
     }
@@ -413,7 +474,8 @@ void editarProfesor() {
     printf("Ingrese el nuevo estado (1 para Activo, 0 para Inactivo): ");
     scanf("%d", &profesores[idx].estado);
 
-    if (profesores[idx].estado != 1 && profesores[idx].estado != 0) {
+    if (profesores[idx].estado != 1 && profesores[idx].estado != 0)
+    {
         printf("Estado inválido.\n");
         return;
     }
@@ -422,8 +484,10 @@ void editarProfesor() {
 }
 
 // Funciones para Cursos
-void crearCurso() {
-    if (num_cursos >= MAX_CURSOS) {
+void crearCurso()
+{
+    if (num_cursos >= MAX_CURSOS)
+    {
         printf("No se pueden agregar más cursos.\n");
         return;
     }
@@ -435,7 +499,8 @@ void crearCurso() {
     fgets(c.codigo, MAX_CODIGO, stdin);
     c.codigo[strcspn(c.codigo, "\n")] = '\0'; // Eliminar salto de línea
 
-    if (verificarCursoExistente(c.codigo)) {
+    if (verificarCursoExistente(c.codigo))
+    {
         printf("El curso con ese código ya existe.\n");
         return;
     }
@@ -446,13 +511,16 @@ void crearCurso() {
 
     // Buscar la materia
     int idx_materia = -1;
-    for (int i = 0; i < num_materias; i++) {
-        if (strcmp(materias[i].codigo, c.materia.codigo) == 0) {
+    for (int i = 0; i < num_materias; i++)
+    {
+        if (strcmp(materias[i].codigo, c.materia.codigo) == 0)
+        {
             idx_materia = i;
             break;
         }
     }
-    if (idx_materia == -1) {
+    if (idx_materia == -1)
+    {
         printf("Materia no encontrada.\n");
         return;
     }
@@ -464,13 +532,16 @@ void crearCurso() {
 
     // Buscar el profesor
     int idx_profesor = -1;
-    for (int i = 0; i < num_profesores; i++) {
-        if (strcmp(profesores[i].cc, c.profesor.cc) == 0) {
+    for (int i = 0; i < num_profesores; i++)
+    {
+        if (strcmp(profesores[i].cc, c.profesor.cc) == 0)
+        {
             idx_profesor = i;
             break;
         }
     }
-    if (idx_profesor == -1) {
+    if (idx_profesor == -1)
+    {
         printf("Profesor no encontrado.\n");
         return;
     }
@@ -479,26 +550,29 @@ void crearCurso() {
     printf("Ingrese la fecha de inicio (formato: YYYY-MM-DD): ");
     scanf("%d-%d-%d", &c.fecha_inicio.tm_year, &c.fecha_inicio.tm_mon, &c.fecha_inicio.tm_mday);
     c.fecha_inicio.tm_year -= 1900; // Año desde 1900
-    c.fecha_inicio.tm_mon -= 1; // Mes desde 0
+    c.fecha_inicio.tm_mon -= 1;     // Mes desde 0
 
     printf("Ingrese la fecha de fin (formato: YYYY-MM-DD): ");
     scanf("%d-%d-%d", &c.fecha_fin.tm_year, &c.fecha_fin.tm_mon, &c.fecha_fin.tm_mday);
     c.fecha_fin.tm_year -= 1900; // Año desde 1900
-    c.fecha_fin.tm_mon -= 1; // Mes desde 0
+    c.fecha_fin.tm_mon -= 1;     // Mes desde 0
 
     // Validar fechas
-    if (difftime(mktime(&c.fecha_inicio), mktime(&c.fecha_fin)) > 0) {
+    if (difftime(mktime(&c.fecha_inicio), mktime(&c.fecha_fin)) > 0)
+    {
         printf("La fecha de inicio no puede ser mayor que la fecha de fin.\n");
         return;
     }
 
     printf("Ingrese los estudiantes (máximo 30). Ingrese 'fin' para terminar.\n");
     int i; // Declarar la variable 'i' aquí
-    for (i = 0; i < MAX_ESTUDIANTES; i++) {
+    for (i = 0; i < MAX_ESTUDIANTES; i++)
+    {
         printf("Estudiante %d: ", i + 1);
         fgets(c.estudiantes[i].matricula, MAX_CODIGO, stdin);
         c.estudiantes[i].matricula[strcspn(c.estudiantes[i].matricula, "\n")] = '\0';
-        if (strcmp(c.estudiantes[i].matricula, "fin") == 0) {
+        if (strcmp(c.estudiantes[i].matricula, "fin") == 0)
+        {
             break;
         }
     }
@@ -508,7 +582,8 @@ void crearCurso() {
     printf("Curso creado con éxito.\n");
 }
 
-void editarCurso() {
+void editarCurso()
+{
     char codigo[MAX_CODIGO];
     printf("\nEditar Curso\n");
     printf("Ingrese el código del curso a editar: ");
@@ -517,14 +592,17 @@ void editarCurso() {
     codigo[strcspn(codigo, "\n")] = '\0'; // Eliminar salto de línea
 
     int idx = -1;
-    for (int i = 0; i < num_cursos; i++) {
-        if (strcmp(cursos[i].codigo, codigo) == 0) {
+    for (int i = 0; i < num_cursos; i++)
+    {
+        if (strcmp(cursos[i].codigo, codigo) == 0)
+        {
             idx = i;
             break;
         }
     }
 
-    if (idx == -1) {
+    if (idx == -1)
+    {
         printf("Curso no encontrado.\n");
         return;
     }
@@ -533,7 +611,8 @@ void editarCurso() {
     struct tm now;
     time_t t = time(NULL);
     now = *localtime(&t);
-    if (difftime(mktime(&now), mktime(&cursos[idx].fecha_inicio)) >= 0) {
+    if (difftime(mktime(&now), mktime(&cursos[idx].fecha_inicio)) >= 0)
+    {
         printf("El curso ya ha comenzado, no puede editarse.\n");
         return;
     }
@@ -548,13 +627,16 @@ void editarCurso() {
 
     // Buscar la nueva materia
     int idx_materia = -1;
-    for (int i = 0; i < num_materias; i++) {
-        if (strcmp(materias[i].codigo, cursos[idx].materia.codigo) == 0) {
+    for (int i = 0; i < num_materias; i++)
+    {
+        if (strcmp(materias[i].codigo, cursos[idx].materia.codigo) == 0)
+        {
             idx_materia = i;
             break;
         }
     }
-    if (idx_materia == -1) {
+    if (idx_materia == -1)
+    {
         printf("Materia no encontrada.\n");
         return;
     }
@@ -566,13 +648,16 @@ void editarCurso() {
 
     // Buscar el nuevo profesor
     int idx_profesor = -1;
-    for (int i = 0; i < num_profesores; i++) {
-        if (strcmp(profesores[i].cc, cursos[idx].profesor.cc) == 0) {
+    for (int i = 0; i < num_profesores; i++)
+    {
+        if (strcmp(profesores[i].cc, cursos[idx].profesor.cc) == 0)
+        {
             idx_profesor = i;
             break;
         }
     }
-    if (idx_profesor == -1) {
+    if (idx_profesor == -1)
+    {
         printf("Profesor no encontrado.\n");
         return;
     }
@@ -581,15 +666,16 @@ void editarCurso() {
     printf("Ingrese la nueva fecha de inicio (formato: YYYY-MM-DD): ");
     scanf("%d-%d-%d", &cursos[idx].fecha_inicio.tm_year, &cursos[idx].fecha_inicio.tm_mon, &cursos[idx].fecha_inicio.tm_mday);
     cursos[idx].fecha_inicio.tm_year -= 1900; // Año desde 1900
-    cursos[idx].fecha_inicio.tm_mon -= 1; // Mes desde 0
+    cursos[idx].fecha_inicio.tm_mon -= 1;     // Mes desde 0
 
     printf("Ingrese la nueva fecha de fin (formato: YYYY-MM-DD): ");
     scanf("%d-%d-%d", &cursos[idx].fecha_fin.tm_year, &cursos[idx].fecha_fin.tm_mon, &cursos[idx].fecha_fin.tm_mday);
     cursos[idx].fecha_fin.tm_year -= 1900; // Año desde 1900
-    cursos[idx].fecha_fin.tm_mon -= 1; // Mes desde 0
+    cursos[idx].fecha_fin.tm_mon -= 1;     // Mes desde 0
 
     // Validar fechas
-    if (difftime(mktime(&cursos[idx].fecha_inicio), mktime(&cursos[idx].fecha_fin)) > 0) {
+    if (difftime(mktime(&cursos[idx].fecha_inicio), mktime(&cursos[idx].fecha_fin)) > 0)
+    {
         printf("La fecha de inicio no puede ser mayor que la fecha de fin.\n");
         return;
     }
@@ -597,76 +683,91 @@ void editarCurso() {
     printf("Curso editado con éxito.\n");
 }
 
-int main() {
+int main()
+{
     char opcion;
 
-    while (1) {
+    while (1)
+    {
         mostrarMenu();
         scanf(" %c", &opcion);
 
-        switch (opcion) {
-            case 'a':
-                printf("\nOpciones de Materia:\n");
-                printf("1. Crear Materia\n");
-                printf("2. Editar Materia\n");
-                printf("Seleccione una opción: ");
-                int opMateria;
-                scanf("%d", &opMateria);
-                if (opMateria == 1) {
-                    crearMateria();
-                } else if (opMateria == 2) {
-                    editarMateria();
-                }
-                break;
+        switch (opcion)
+        {
+        case 'a':
+            printf("\nOpciones de Materia:\n");
+            printf("1. Crear Materia\n");
+            printf("2. Editar Materia\n");
+            printf("Seleccione una opción: ");
+            int opMateria;
+            scanf("%d", &opMateria);
+            if (opMateria == 1)
+            {
+                crearMateria();
+            }
+            else if (opMateria == 2)
+            {
+                editarMateria();
+            }
+            break;
 
-            case 'b':
-                printf("\nOpciones de Estudiante:\n");
-                printf("1. Crear Estudiante\n");
-                printf("2. Editar Estudiante\n");
-                printf("Seleccione una opción: ");
-                int opEstudiante;
-                scanf("%d", &opEstudiante);
-                if (opEstudiante == 1) {
-                    crearEstudiante();
-                } else if (opEstudiante == 2) {
-                    editarEstudiante();
-                }
-                break;
+        case 'b':
+            printf("\nOpciones de Estudiante:\n");
+            printf("1. Crear Estudiante\n");
+            printf("2. Editar Estudiante\n");
+            printf("Seleccione una opción: ");
+            int opEstudiante;
+            scanf("%d", &opEstudiante);
+            if (opEstudiante == 1)
+            {
+                crearEstudiante();
+            }
+            else if (opEstudiante == 2)
+            {
+                editarEstudiante();
+            }
+            break;
 
-            case 'c':
-                printf("\nOpciones de Profesor:\n");
-                printf("1. Crear Profesor\n");
-                printf("2. Editar Profesor\n");
-                printf("Seleccione una opción: ");
-                int opProfesor;
-                scanf("%d", &opProfesor);
-                if (opProfesor == 1) {
-                    crearProfesor();
-                } else if (opProfesor == 2) {
-                    editarProfesor();
-                }
-                break;
+        case 'c':
+            printf("\nOpciones de Profesor:\n");
+            printf("1. Crear Profesor\n");
+            printf("2. Editar Profesor\n");
+            printf("Seleccione una opción: ");
+            int opProfesor;
+            scanf("%d", &opProfesor);
+            if (opProfesor == 1)
+            {
+                crearProfesor();
+            }
+            else if (opProfesor == 2)
+            {
+                editarProfesor();
+            }
+            break;
 
-            case 'd':
-                printf("\nOpciones de Curso:\n");
-                printf("1. Crear Curso\n");
-                printf("2. Editar Curso\n");
-                printf("Seleccione una opción: ");
-                int opCurso;
-                scanf("%d", &opCurso);
-                if (opCurso == 1) {
-                    crearCurso();
-                } else if (opCurso == 2) {
-                    editarCurso();
-                }
-                break;
+        case 'd':
+            printf("\nOpciones de Curso:\n");
+            printf("1. Crear Curso\n");
+            printf("2. Editar Curso\n");
+            printf("Seleccione una opción: ");
+            int opCurso;
+            scanf("%d", &opCurso);
+            if (opCurso == 1)
+            {
+                crearCurso();
+            }
+            else if (opCurso == 2)
+            {
+                editarCurso();
+            }
+            break;
 
-            case 'e':
-                printf("Saliendo del programa...\n");
-                return 0;
+        case 'e':
+            printf("Saliendo del programa...\n");
+            return 0;
 
-            default:
-                printf("Opción inválida. Intente nuevamente.\n");
+        default:
+            printf("Opción inválida. Intente nuevamente.\n");
         }
     }
 
