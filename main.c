@@ -1,775 +1,436 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <time.h>
 
 #define MAX_MATERIAS 100
-#define MAX_ESTUDIANTES 30
-#define MAX_PROFESORES 50
-#define MAX_CURSOS 50
-#define MAX_CODIGO 20
-#define MAX_USUARIO 50
-#define MAX_NOMBRE 100
+#define MAX_ESTUDIANTES 100
+#define MAX_PROFESORES 100
+#define MAX_CURSOS 100
 
-// Estructuras
-typedef struct
-{
-    char nombre[MAX_NOMBRE];
-    char codigo[MAX_CODIGO];
-    int estado; // 1 Activo, 0 Inactivo
+// Estructuras de datos
+typedef struct {
+    char nombre[50];
+    char codigo[20];
+    int estado; // 1: Activo, 0: Inactivo
 } Materia;
 
-typedef struct
-{
-    char matricula[MAX_CODIGO];
-    char nombres[MAX_NOMBRE];
-    char apellidos[MAX_NOMBRE];
-    char usuario[MAX_USUARIO];
-    char clave[MAX_USUARIO];
-    int estado; // 1 Activo, 0 Inactivo
+typedef struct {
+    char nombres[50];
+    char apellidos[50];
+    char matricula[20];
+    char usuario[20];
+    char clave[20];
+    int estado; // 1: Activo, 0: Inactivo
 } Estudiante;
 
-typedef struct
-{
-    char cc[MAX_CODIGO]; // C.C. (cédula de ciudadanía)
-    char nombres[MAX_NOMBRE];
-    char apellidos[MAX_NOMBRE];
-    char usuario[MAX_USUARIO];
-    char clave[MAX_USUARIO];
-    int estado;                              // 1 Activo, 0 Inactivo
-    char materias[MAX_MATERIAS][MAX_CODIGO]; // Materias que puede dictar
+typedef struct {
+    char nombres[50];
+    char apellidos[50];
+    char cc[20];
+    char usuario[20];
+    char clave[20];
+    int estado; // 1: Activo, 0: Inactivo
+    char materias[500]; // Listado de materias que puede dictar
 } Profesor;
 
-typedef struct
-{
-    char codigo[MAX_CODIGO];
-    Materia materia;
-    Profesor profesor;
-    struct tm fecha_inicio;
-    struct tm fecha_fin;
-    Estudiante estudiantes[MAX_ESTUDIANTES];
-    int num_estudiantes;
+typedef struct {
+    char codigo[20];
+    char codigoMateria[20];
+    char ccProfesor[20];
+    char fechaInicio[20];
+    char fechaFin[20];
+    char matriculasEstudiantes[500]; // Listado de matrículas de estudiantes
 } Curso;
 
-// Variables globales
+// Arreglos globales para almacenar los datos
 Materia materias[MAX_MATERIAS];
 Estudiante estudiantes[MAX_ESTUDIANTES];
 Profesor profesores[MAX_PROFESORES];
 Curso cursos[MAX_CURSOS];
 
-int num_materias = 0;
-int num_estudiantes = 0;
-int num_profesores = 0;
-int num_cursos = 0;
+// Contadores de registros
+int materiaCount = 0;
+int estudianteCount = 0;
+int profesorCount = 0;
+int cursoCount = 0;
 
-// Funciones auxiliares
-int verificarMateriaExistente(char *codigo)
-{
-    for (int i = 0; i < num_materias; i++)
-    {
-        if (strcmp(materias[i].codigo, codigo) == 0)
-        {
-            return 1; // Materia ya existe
-        }
+// Funciones de archivo
+void leerMaterias();
+void guardarMaterias();
+void leerEstudiantes();
+void guardarEstudiantes();
+void leerProfesores();
+void guardarProfesores();
+void leerCursos();
+void guardarCursos();
+
+// Funciones de menú y opciones
+void mostrarMenu();
+void ejecutarOpcion(char opcion);
+void crearMateria();
+void editarMateria();
+void crearEstudiante();
+void editarEstudiante();
+void crearProfesor();
+void editarProfesor();
+void crearCurso();
+void editarCurso();
+
+// Función principal
+int main() {
+    char opcion;
+    
+    // Cargar los datos iniciales
+    leerMaterias();
+    leerEstudiantes();
+    leerProfesores();
+    leerCursos();
+
+    while (1) {
+        mostrarMenu();
+        printf("Seleccione una opción: ");
+        scanf(" %c", &opcion);
+        ejecutarOpcion(opcion);
     }
+
+    // Guardar los datos al finalizar
+    guardarMaterias();
+    guardarEstudiantes();
+    guardarProfesores();
+    guardarCursos();
+    printf("Datos guardados correctamente.\n");
+
     return 0;
 }
 
-int verificarEstudianteExistente(char *matricula, char *usuario)
-{
-    for (int i = 0; i < num_estudiantes; i++)
-    {
-        if (strcmp(estudiantes[i].matricula, matricula) == 0 || strcmp(estudiantes[i].usuario, usuario) == 0)
-        {
-            return 1; // Estudiante ya existe
-        }
-    }
-    return 0;
-}
-
-int verificarProfesorExistente(char *cc, char *usuario)
-{
-    for (int i = 0; i < num_profesores; i++)
-    {
-        if (strcmp(profesores[i].cc, cc) == 0 || strcmp(profesores[i].usuario, usuario) == 0)
-        {
-            return 1; // Profesor ya existe
-        }
-    }
-    return 0;
-}
-
-int verificarCursoExistente(char *codigo)
-{
-    for (int i = 0; i < num_cursos; i++)
-    {
-        if (strcmp(cursos[i].codigo, codigo) == 0)
-        {
-            return 1; // Curso ya existe
-        }
-    }
-    return 0;
-}
-
-int verificarEstudianteEnCurso(char *matricula)
-{
-    for (int i = 0; i < num_cursos; i++)
-    {
-        for (int j = 0; j < cursos[i].num_estudiantes; j++)
-        {
-            if (strcmp(cursos[i].estudiantes[j].matricula, matricula) == 0)
-            {
-                return 1; // Estudiante está en curso
-            }
-        }
-    }
-    return 0;
-}
-
-int verificarProfesorEnCurso(char *cc)
-{
-    for (int i = 0; i < num_cursos; i++)
-    {
-        if (strcmp(cursos[i].profesor.cc, cc) == 0)
-        {
-            return 1; // Profesor tiene un curso en proceso
-        }
-    }
-    return 0;
-}
-
-// Funciones de menú
-void mostrarMenu()
-{
-    printf("\nMenú:\n");
+// Mostrar el menú principal
+void mostrarMenu() {
+    printf("\n--- Menú de Opciones ---\n");
     printf("a. Materia\n");
     printf("b. Estudiante\n");
     printf("c. Profesor\n");
     printf("d. Curso\n");
     printf("e. Salir\n");
-    printf("Seleccione una opción: ");
 }
 
-// Funciones para Materias
-void crearMateria()
-{
-    if (num_materias >= MAX_MATERIAS)
-    {
-        printf("No se pueden agregar más materias.\n");
-        return;
-    }
-
-    Materia m;
-    printf("\nCrear Materia\n");
-    printf("Ingrese el nombre de la materia: ");
-    getchar(); // Limpiar buffer
-    fgets(m.nombre, MAX_NOMBRE, stdin);
-    m.nombre[strcspn(m.nombre, "\n")] = '\0'; // Eliminar salto de línea
-
-    printf("Ingrese el código de la materia: ");
-    fgets(m.codigo, MAX_CODIGO, stdin);
-    m.codigo[strcspn(m.codigo, "\n")] = '\0'; // Eliminar salto de línea
-
-    if (verificarMateriaExistente(m.codigo))
-    {
-        printf("La materia con ese código ya existe.\n");
-        return;
-    }
-
-    printf("Ingrese el estado (1 para Activo, 0 para Inactivo): ");
-    scanf("%d", &m.estado);
-
-    if (m.estado != 1 && m.estado != 0)
-    {
-        printf("Estado inválido.\n");
-        return;
-    }
-
-    materias[num_materias++] = m;
-    printf("Materia creada con éxito.\n");
-}
-
-void editarMateria()
-{
-    char codigo[MAX_CODIGO];
-    printf("\nEditar Materia\n");
-    printf("Ingrese el código de la materia a editar: ");
-    getchar(); // Limpiar buffer
-    fgets(codigo, MAX_CODIGO, stdin);
-    codigo[strcspn(codigo, "\n")] = '\0'; // Eliminar salto de línea
-
-    int idx = -1;
-    for (int i = 0; i < num_materias; i++)
-    {
-        if (strcmp(materias[i].codigo, codigo) == 0)
-        {
-            idx = i;
-            break;
-        }
-    }
-
-    if (idx == -1)
-    {
-        printf("Materia no encontrada.\n");
-        return;
-    }
-
-    if (verificarCursoExistente(codigo))
-    {
-        printf("No se puede inactivar la materia porque tiene un curso en proceso.\n");
-        return;
-    }
-
-    printf("Ingrese el nuevo estado (1 para Activo, 0 para Inactivo): ");
-    scanf("%d", &materias[idx].estado);
-
-    if (materias[idx].estado != 1 && materias[idx].estado != 0)
-    {
-        printf("Estado inválido.\n");
-        return;
-    }
-
-    printf("Materia editada con éxito.\n");
-}
-
-// Funciones para Estudiantes
-void crearEstudiante()
-{
-    if (num_estudiantes >= MAX_ESTUDIANTES)
-    {
-        printf("No se pueden agregar más estudiantes.\n");
-        return;
-    }
-
-    Estudiante e;
-    printf("\nCrear Estudiante\n");
-    printf("Ingrese los nombres: ");
-    getchar(); // Limpiar buffer
-    fgets(e.nombres, MAX_NOMBRE, stdin);
-    e.nombres[strcspn(e.nombres, "\n")] = '\0'; // Eliminar salto de línea
-
-    printf("Ingrese los apellidos: ");
-    fgets(e.apellidos, MAX_NOMBRE, stdin);
-    e.apellidos[strcspn(e.apellidos, "\n")] = '\0'; // Eliminar salto de línea
-
-    printf("Ingrese la matrícula: ");
-    fgets(e.matricula, MAX_CODIGO, stdin);
-    e.matricula[strcspn(e.matricula, "\n")] = '\0'; // Eliminar salto de línea
-
-    if (verificarEstudianteExistente(e.matricula, ""))
-    {
-        printf("La matrícula ya existe.\n");
-        return;
-    }
-
-    printf("Ingrese el usuario: ");
-    fgets(e.usuario, MAX_USUARIO, stdin);
-    e.usuario[strcspn(e.usuario, "\n")] = '\0'; // Eliminar salto de línea
-
-    if (verificarEstudianteExistente("", e.usuario))
-    {
-        printf("El usuario ya existe.\n");
-        return;
-    }
-
-    printf("Ingrese la clave: ");
-    fgets(e.clave, MAX_USUARIO, stdin);
-    e.clave[strcspn(e.clave, "\n")] = '\0'; // Eliminar salto de línea
-
-    printf("Ingrese el estado (1 para Activo, 0 para Inactivo): ");
-    scanf("%d", &e.estado);
-
-    if (e.estado != 1 && e.estado != 0)
-    {
-        printf("Estado inválido.\n");
-        return;
-    }
-
-    estudiantes[num_estudiantes++] = e;
-    printf("Estudiante creado con éxito.\n");
-}
-
-void editarEstudiante()
-{
-    char matricula[MAX_CODIGO];
-    printf("\nEditar Estudiante\n");
-    printf("Ingrese la matrícula del estudiante a editar: ");
-    getchar(); // Limpiar buffer
-    fgets(matricula, MAX_CODIGO, stdin);
-    matricula[strcspn(matricula, "\n")] = '\0'; // Eliminar salto de línea
-
-    int idx = -1;
-    for (int i = 0; i < num_estudiantes; i++)
-    {
-        if (strcmp(estudiantes[i].matricula, matricula) == 0)
-        {
-            idx = i;
-            break;
-        }
-    }
-
-    if (idx == -1)
-    {
-        printf("Estudiante no encontrado.\n");
-        return;
-    }
-
-    if (verificarEstudianteEnCurso(matricula))
-    {
-        printf("No se puede inactivar al estudiante porque tiene un curso en proceso.\n");
-        return;
-    }
-
-    printf("Ingrese la nueva clave: ");
-    fgets(estudiantes[idx].clave, MAX_USUARIO, stdin);
-    estudiantes[idx].clave[strcspn(estudiantes[idx].clave, "\n")] = '\0'; // Eliminar salto de línea
-
-    printf("Ingrese el nuevo estado (1 para Activo, 0 para Inactivo): ");
-    scanf("%d", &estudiantes[idx].estado);
-
-    if (estudiantes[idx].estado != 1 && estudiantes[idx].estado != 0)
-    {
-        printf("Estado inválido.\n");
-        return;
-    }
-
-    printf("Estudiante editado con éxito.\n");
-}
-
-// Funciones para Profesores
-void crearProfesor()
-{
-    if (num_profesores >= MAX_PROFESORES)
-    {
-        printf("No se pueden agregar más profesores.\n");
-        return;
-    }
-
-    Profesor p;
-    printf("\nCrear Profesor\n");
-    printf("Ingrese los nombres: ");
-    getchar(); // Limpiar buffer de la entrada anterior
-    fgets(p.nombres, MAX_NOMBRE, stdin);
-    p.nombres[strcspn(p.nombres, "\n")] = '\0'; // Eliminar salto de línea
-
-    printf("Ingrese los apellidos: ");
-    fgets(p.apellidos, MAX_NOMBRE, stdin);
-    p.apellidos[strcspn(p.apellidos, "\n")] = '\0'; // Eliminar salto de línea
-
-    printf("Ingrese la C.C.: ");
-    fgets(p.cc, MAX_CODIGO, stdin);
-    p.cc[strcspn(p.cc, "\n")] = '\0'; // Eliminar salto de línea
-
-    if (verificarProfesorExistente(p.cc, ""))
-    {
-        printf("El profesor con esa C.C. ya existe.\n");
-        return;
-    }
-
-    printf("Ingrese el usuario: ");
-    fgets(p.usuario, MAX_USUARIO, stdin);
-    p.usuario[strcspn(p.usuario, "\n")] = '\0'; // Eliminar salto de línea
-
-    if (verificarProfesorExistente("", p.usuario))
-    {
-        printf("El usuario ya existe.\n");
-        return;
-    }
-
-    printf("Ingrese la clave: ");
-    fgets(p.clave, MAX_USUARIO, stdin);
-    p.clave[strcspn(p.clave, "\n")] = '\0'; // Eliminar salto de línea
-
-    printf("Ingrese el estado (1 para Activo, 0 para Inactivo): ");
-    scanf("%d", &p.estado);
-
-    if (p.estado != 1 && p.estado != 0)
-    {
-        printf("Estado inválido.\n");
-        return;
-    }
-
-    while (getchar() != '\n')
-        ;
-
-    // Ingresar materias que puede dictar
-    int j = 0;
-    while (j < MAX_MATERIAS)
-    {
-        printf("Ingrese la materia %d (ingrese '0' para terminar): ", j + 1);
-        fgets(p.materias[j], MAX_CODIGO, stdin);
-
-        // Eliminar el salto de línea al final de la entrada
-        p.materias[j][strcspn(p.materias[j], "\n")] = '\0';
-
-        // Si se ingresa '0', se sale del ciclo
-        if (strcmp(p.materias[j], "0") == 0)
-        {
-            break;
-        }
-
-        // Validar que no se ingresen cadenas vacías
-        if (strlen(p.materias[j]) == 0)
-        {
-            printf("Entrada vacía. Por favor, ingrese un código de materia válido.\n");
-            continue;
-        }
-
-        j++; // Aumentar el índice de materias
-
-        if (j >= MAX_MATERIAS)
-        { // Limitar el número de materias
-            printf("Máximo de materias alcanzado.\n");
-            break;
-        }
-    }
-
-    // Verificar si no se ingresaron materias
-    if (j == 0)
-    {
-        printf("No se registraron materias para este profesor.\n");
-    }
-    else
-    {
-        profesores[num_profesores++] = p;
-        printf("Profesor creado con éxito.\n");
-    }
-}
-
-void editarProfesor()
-{
-    char cc[MAX_CODIGO];
-    printf("\nEditar Profesor\n");
-    printf("Ingrese la C.C. del profesor a editar: ");
-    getchar(); // Limpiar buffer
-    fgets(cc, MAX_CODIGO, stdin);
-    cc[strcspn(cc, "\n")] = '\0'; // Eliminar salto de línea
-
-    int idx = -1;
-    for (int i = 0; i < num_profesores; i++)
-    {
-        if (strcmp(profesores[i].cc, cc) == 0)
-        {
-            idx = i;
-            break;
-        }
-    }
-
-    if (idx == -1)
-    {
-        printf("Profesor no encontrado.\n");
-        return;
-    }
-
-    if (verificarProfesorEnCurso(cc))
-    {
-        printf("No se puede inactivar al profesor porque tiene un curso en proceso.\n");
-        return;
-    }
-
-    printf("Ingrese la nueva clave: ");
-    fgets(profesores[idx].clave, MAX_USUARIO, stdin);
-    profesores[idx].clave[strcspn(profesores[idx].clave, "\n")] = '\0'; // Eliminar salto de línea
-
-    printf("Ingrese el nuevo estado (1 para Activo, 0 para Inactivo): ");
-    scanf("%d", &profesores[idx].estado);
-
-    if (profesores[idx].estado != 1 && profesores[idx].estado != 0)
-    {
-        printf("Estado inválido.\n");
-        return;
-    }
-
-    printf("Profesor editado con éxito.\n");
-}
-
-// Funciones para Cursos
-void crearCurso()
-{
-    if (num_cursos >= MAX_CURSOS)
-    {
-        printf("No se pueden agregar más cursos.\n");
-        return;
-    }
-
-    Curso c;
-    printf("\nCrear Curso\n");
-    printf("Ingrese el código del curso: ");
-    getchar(); // Limpiar buffer
-    fgets(c.codigo, MAX_CODIGO, stdin);
-    c.codigo[strcspn(c.codigo, "\n")] = '\0'; // Eliminar salto de línea
-
-    if (verificarCursoExistente(c.codigo))
-    {
-        printf("El curso con ese código ya existe.\n");
-        return;
-    }
-
-    printf("Ingrese la materia del curso: ");
-    fgets(c.materia.codigo, MAX_CODIGO, stdin);
-    c.materia.codigo[strcspn(c.materia.codigo, "\n")] = '\0'; // Eliminar salto de línea
-
-    // Buscar la materia
-    int idx_materia = -1;
-    for (int i = 0; i < num_materias; i++)
-    {
-        if (strcmp(materias[i].codigo, c.materia.codigo) == 0)
-        {
-            idx_materia = i;
-            break;
-        }
-    }
-    if (idx_materia == -1)
-    {
-        printf("Materia no encontrada.\n");
-        return;
-    }
-    c.materia = materias[idx_materia];
-
-    printf("Ingrese el C.C. del profesor: ");
-    fgets(c.profesor.cc, MAX_CODIGO, stdin);
-    c.profesor.cc[strcspn(c.profesor.cc, "\n")] = '\0'; // Eliminar salto de línea
-
-    // Buscar el profesor
-    int idx_profesor = -1;
-    for (int i = 0; i < num_profesores; i++)
-    {
-        if (strcmp(profesores[i].cc, c.profesor.cc) == 0)
-        {
-            idx_profesor = i;
-            break;
-        }
-    }
-    if (idx_profesor == -1)
-    {
-        printf("Profesor no encontrado.\n");
-        return;
-    }
-    c.profesor = profesores[idx_profesor];
-
-    printf("Ingrese la fecha de inicio (formato: YYYY-MM-DD): ");
-    scanf("%d-%d-%d", &c.fecha_inicio.tm_year, &c.fecha_inicio.tm_mon, &c.fecha_inicio.tm_mday);
-    c.fecha_inicio.tm_year -= 1900; // Año desde 1900
-    c.fecha_inicio.tm_mon -= 1;     // Mes desde 0
-
-    printf("Ingrese la fecha de fin (formato: YYYY-MM-DD): ");
-    scanf("%d-%d-%d", &c.fecha_fin.tm_year, &c.fecha_fin.tm_mon, &c.fecha_fin.tm_mday);
-    c.fecha_fin.tm_year -= 1900; // Año desde 1900
-    c.fecha_fin.tm_mon -= 1;     // Mes desde 0
-
-    // Validar fechas
-    if (difftime(mktime(&c.fecha_inicio), mktime(&c.fecha_fin)) > 0)
-    {
-        printf("La fecha de inicio no puede ser mayor que la fecha de fin.\n");
-        return;
-    }
-
-    printf("Ingrese los estudiantes (máximo 30). Ingrese 'fin' para terminar.\n");
-    int i; // Declarar la variable 'i' aquí
-    for (i = 0; i < MAX_ESTUDIANTES; i++)
-    {
-        printf("Estudiante %d: ", i + 1);
-        fgets(c.estudiantes[i].matricula, MAX_CODIGO, stdin);
-        c.estudiantes[i].matricula[strcspn(c.estudiantes[i].matricula, "\n")] = '\0';
-        if (strcmp(c.estudiantes[i].matricula, "fin") == 0)
-        {
-            break;
-        }
-    }
-    c.num_estudiantes = i; // Ahora la variable 'i' está correctamente declarada
-
-    cursos[num_cursos++] = c;
-    printf("Curso creado con éxito.\n");
-}
-
-void editarCurso()
-{
-    char codigo[MAX_CODIGO];
-    printf("\nEditar Curso\n");
-    printf("Ingrese el código del curso a editar: ");
-    getchar(); // Limpiar buffer
-    fgets(codigo, MAX_CODIGO, stdin);
-    codigo[strcspn(codigo, "\n")] = '\0'; // Eliminar salto de línea
-
-    int idx = -1;
-    for (int i = 0; i < num_cursos; i++)
-    {
-        if (strcmp(cursos[i].codigo, codigo) == 0)
-        {
-            idx = i;
-            break;
-        }
-    }
-
-    if (idx == -1)
-    {
-        printf("Curso no encontrado.\n");
-        return;
-    }
-
-    // Verificar si la fecha de inicio ya pasó
-    struct tm now;
-    time_t t = time(NULL);
-    now = *localtime(&t);
-    if (difftime(mktime(&now), mktime(&cursos[idx].fecha_inicio)) >= 0)
-    {
-        printf("El curso ya ha comenzado, no puede editarse.\n");
-        return;
-    }
-
-    printf("Ingrese el nuevo código del curso: ");
-    fgets(cursos[idx].codigo, MAX_CODIGO, stdin);
-    cursos[idx].codigo[strcspn(cursos[idx].codigo, "\n")] = '\0'; // Eliminar salto de línea
-
-    printf("Ingrese la nueva materia del curso: ");
-    fgets(cursos[idx].materia.codigo, MAX_CODIGO, stdin);
-    cursos[idx].materia.codigo[strcspn(cursos[idx].materia.codigo, "\n")] = '\0'; // Eliminar salto de línea
-
-    // Buscar la nueva materia
-    int idx_materia = -1;
-    for (int i = 0; i < num_materias; i++)
-    {
-        if (strcmp(materias[i].codigo, cursos[idx].materia.codigo) == 0)
-        {
-            idx_materia = i;
-            break;
-        }
-    }
-    if (idx_materia == -1)
-    {
-        printf("Materia no encontrada.\n");
-        return;
-    }
-    cursos[idx].materia = materias[idx_materia];
-
-    printf("Ingrese el C.C. del profesor: ");
-    fgets(cursos[idx].profesor.cc, MAX_CODIGO, stdin);
-    cursos[idx].profesor.cc[strcspn(cursos[idx].profesor.cc, "\n")] = '\0'; // Eliminar salto de línea
-
-    // Buscar el nuevo profesor
-    int idx_profesor = -1;
-    for (int i = 0; i < num_profesores; i++)
-    {
-        if (strcmp(profesores[i].cc, cursos[idx].profesor.cc) == 0)
-        {
-            idx_profesor = i;
-            break;
-        }
-    }
-    if (idx_profesor == -1)
-    {
-        printf("Profesor no encontrado.\n");
-        return;
-    }
-    cursos[idx].profesor = profesores[idx_profesor];
-
-    printf("Ingrese la nueva fecha de inicio (formato: YYYY-MM-DD): ");
-    scanf("%d-%d-%d", &cursos[idx].fecha_inicio.tm_year, &cursos[idx].fecha_inicio.tm_mon, &cursos[idx].fecha_inicio.tm_mday);
-    cursos[idx].fecha_inicio.tm_year -= 1900; // Año desde 1900
-    cursos[idx].fecha_inicio.tm_mon -= 1;     // Mes desde 0
-
-    printf("Ingrese la nueva fecha de fin (formato: YYYY-MM-DD): ");
-    scanf("%d-%d-%d", &cursos[idx].fecha_fin.tm_year, &cursos[idx].fecha_fin.tm_mon, &cursos[idx].fecha_fin.tm_mday);
-    cursos[idx].fecha_fin.tm_year -= 1900; // Año desde 1900
-    cursos[idx].fecha_fin.tm_mon -= 1;     // Mes desde 0
-
-    // Validar fechas
-    if (difftime(mktime(&cursos[idx].fecha_inicio), mktime(&cursos[idx].fecha_fin)) > 0)
-    {
-        printf("La fecha de inicio no puede ser mayor que la fecha de fin.\n");
-        return;
-    }
-
-    printf("Curso editado con éxito.\n");
-}
-
-int main()
-{
-    char opcion;
-
-    while (1)
-    {
-        mostrarMenu();
-        scanf(" %c", &opcion);
-
-        switch (opcion)
-        {
+// Ejecutar la opción seleccionada
+void ejecutarOpcion(char opcion) {
+    switch (opcion) {
         case 'a':
-            printf("\nOpciones de Materia:\n");
-            printf("1. Crear Materia\n");
-            printf("2. Editar Materia\n");
-            printf("Seleccione una opción: ");
-            int opMateria;
-            scanf("%d", &opMateria);
-            if (opMateria == 1)
-            {
-                crearMateria();
-            }
-            else if (opMateria == 2)
-            {
-                editarMateria();
-            }
+            printf("a. Materia\n");
+            printf("1. Crear\n");
+            printf("2. Editar\n");
+            char opcionMateria;
+            scanf(" %c", &opcionMateria);
+            if (opcionMateria == '1') crearMateria();
+            else if (opcionMateria == '2') editarMateria();
             break;
-
         case 'b':
-            printf("\nOpciones de Estudiante:\n");
-            printf("1. Crear Estudiante\n");
-            printf("2. Editar Estudiante\n");
-            printf("Seleccione una opción: ");
-            int opEstudiante;
-            scanf("%d", &opEstudiante);
-            if (opEstudiante == 1)
-            {
-                crearEstudiante();
-            }
-            else if (opEstudiante == 2)
-            {
-                editarEstudiante();
-            }
+            printf("b. Estudiante\n");
+            printf("1. Crear\n");
+            printf("2. Editar\n");
+            char opcionEstudiante;
+            scanf(" %c", &opcionEstudiante);
+            if (opcionEstudiante == '1') crearEstudiante();
+            else if (opcionEstudiante == '2') editarEstudiante();
             break;
-
         case 'c':
-            printf("\nOpciones de Profesor:\n");
-            printf("1. Crear Profesor\n");
-            printf("2. Editar Profesor\n");
-            printf("Seleccione una opción: ");
-            int opProfesor;
-            scanf("%d", &opProfesor);
-            if (opProfesor == 1)
-            {
-                crearProfesor();
-            }
-            else if (opProfesor == 2)
-            {
-                editarProfesor();
-            }
+            printf("c. Profesor\n");
+            printf("1. Crear\n");
+            printf("2. Editar\n");
+            char opcionProfesor;
+            scanf(" %c", &opcionProfesor);
+            if (opcionProfesor == '1') crearProfesor();
+            else if (opcionProfesor == '2') editarProfesor();
             break;
-
         case 'd':
-            printf("\nOpciones de Curso:\n");
-            printf("1. Crear Curso\n");
-            printf("2. Editar Curso\n");
-            printf("Seleccione una opción: ");
-            int opCurso;
-            scanf("%d", &opCurso);
-            if (opCurso == 1)
-            {
-                crearCurso();
-            }
-            else if (opCurso == 2)
-            {
-                editarCurso();
-            }
+            printf("d. Curso\n");
+            printf("1. Crear\n");
+            printf("2. Editar\n");
+            char opcionCurso;
+            scanf(" %c", &opcionCurso);
+            if (opcionCurso == '1') crearCurso();
+            else if (opcionCurso == '2') editarCurso();
             break;
-
         case 'e':
-            printf("Saliendo del programa...\n");
-            return 0;
-
+            printf("Saliendo...\n");
+            exit(0);
         default:
-            printf("Opción inválida. Intente nuevamente.\n");
+            printf("Opción no válida.\n");
+            break;
+    }
+}
+
+// Crear Materia
+void crearMateria() {
+    Materia m;
+    printf("Ingrese el nombre de la materia: ");
+    scanf(" %[^\n]", m.nombre);
+    printf("Ingrese el código de la materia: ");
+    scanf(" %s", m.codigo);
+    m.estado = 1; // Estado activo por defecto
+
+    // Verificar que el código de la materia no exista
+    for (int i = 0; i < materiaCount; i++) {
+        if (strcmp(m.codigo, materias[i].codigo) == 0) {
+            printf("El código de la materia ya existe.\n");
+            return;
         }
     }
 
-    return 0;
+    materias[materiaCount++] = m;
+    printf("Materia creada exitosamente.\n");
+    guardarMaterias();  // Guardar los datos inmediatamente en el archivo
+}
+
+// Editar Materia
+void editarMateria() {
+    char codigo[20];
+    printf("Ingrese el código de la materia a editar: ");
+    scanf(" %s", codigo);
+
+    for (int i = 0; i < materiaCount; i++) {
+        if (strcmp(materias[i].codigo, codigo) == 0) {
+            printf("Materia encontrada: %s\n", materias[i].nombre);
+            printf("Cambiar estado (1: Activo, 0: Inactivo): ");
+            int nuevoEstado;
+            scanf("%d", &nuevoEstado);
+            if (nuevoEstado != 1 && nuevoEstado != 0) {
+                printf("Estado no válido.\n");
+                return;
+            }
+            materias[i].estado = nuevoEstado;
+            printf("Estado de la materia actualizado.\n");
+            guardarMaterias();  // Guardar los datos inmediatamente en el archivo
+            return;
+        }
+    }
+    printf("Materia no encontrada.\n");
+}
+
+// Crear Estudiante
+void crearEstudiante() {
+    Estudiante e;
+    printf("Ingrese los nombres del estudiante: ");
+    scanf(" %[^\n]", e.nombres);
+    printf("Ingrese los apellidos del estudiante: ");
+    scanf(" %[^\n]", e.apellidos);
+    printf("Ingrese la matrícula: ");
+    scanf(" %s", e.matricula);
+    printf("Ingrese el usuario: ");
+    scanf(" %s", e.usuario);
+    printf("Ingrese la clave: ");
+    scanf(" %s", e.clave);
+    e.estado = 1; // Estado activo por defecto
+
+    // Verificar que la matrícula y el usuario sean únicos
+    for (int i = 0; i < estudianteCount; i++) {
+        if (strcmp(e.matricula, estudiantes[i].matricula) == 0 || strcmp(e.usuario, estudiantes[i].usuario) == 0) {
+            printf("La matrícula o el usuario ya existe.\n");
+            return;
+        }
+    }
+
+    estudiantes[estudianteCount++] = e;
+    printf("Estudiante creado exitosamente.\n");
+    guardarEstudiantes();  // Guardar los datos inmediatamente en el archivo
+}
+
+// Editar Estudiante
+void editarEstudiante() {
+    char matricula[20];
+    printf("Ingrese la matrícula del estudiante a editar: ");
+    scanf(" %s", matricula);
+
+    for (int i = 0; i < estudianteCount; i++) {
+        if (strcmp(estudiantes[i].matricula, matricula) == 0) {
+            printf("Estudiante encontrado: %s %s\n", estudiantes[i].nombres, estudiantes[i].apellidos);
+            printf("Cambiar clave: ");
+            scanf(" %s", estudiantes[i].clave);
+            printf("Cambiar estado (1: Activo, 0: Inactivo): ");
+            int nuevoEstado;
+            scanf("%d", &nuevoEstado);
+            estudiantes[i].estado = nuevoEstado;
+            printf("Estudiante actualizado.\n");
+            guardarEstudiantes();  // Guardar los datos inmediatamente en el archivo
+            return;
+        }
+    }
+    printf("Estudiante no encontrado.\n");
+}
+
+// Crear Profesor
+void crearProfesor() {
+    Profesor p;
+    printf("Ingrese los nombres del profesor: ");
+    scanf(" %[^\n]", p.nombres);
+    printf("Ingrese los apellidos del profesor: ");
+    scanf(" %[^\n]", p.apellidos);
+    printf("Ingrese la cédula del profesor: ");
+    scanf(" %s", p.cc);
+    printf("Ingrese el usuario: ");
+    scanf(" %s", p.usuario);
+    printf("Ingrese la clave: ");
+    scanf(" %s", p.clave);
+    p.estado = 1; // Estado activo por defecto
+    printf("Ingrese las materias que puede dictar (separadas por '/'): ");
+    scanf(" %[^\n]", p.materias);
+
+    // Verificar que la cédula y el usuario sean únicos
+    for (int i = 0; i < profesorCount; i++) {
+        if (strcmp(p.cc, profesores[i].cc) == 0 || strcmp(p.usuario, profesores[i].usuario) == 0) {
+            printf("La cédula o el usuario ya existe.\n");
+            return;
+        }
+    }
+
+    profesores[profesorCount++] = p;
+    printf("Profesor creado exitosamente.\n");
+    guardarProfesores();  // Guardar los datos inmediatamente en el archivo
+}
+
+// Editar Profesor
+void editarProfesor() {
+    char cc[20];
+    printf("Ingrese la cédula del profesor a editar: ");
+    scanf(" %s", cc);
+
+    for (int i = 0; i < profesorCount; i++) {
+        if (strcmp(profesores[i].cc, cc) == 0) {
+            printf("Profesor encontrado: %s %s\n", profesores[i].nombres, profesores[i].apellidos);
+            printf("Cambiar clave: ");
+            scanf(" %s", profesores[i].clave);
+            printf("Cambiar estado (1: Activo, 0: Inactivo): ");
+            int nuevoEstado;
+            scanf("%d", &nuevoEstado);
+            profesores[i].estado = nuevoEstado;
+            printf("Profesor actualizado.\n");
+            guardarProfesores();  // Guardar los datos inmediatamente en el archivo
+            return;
+        }
+    }
+    printf("Profesor no encontrado.\n");
+}
+
+// Crear Curso
+void crearCurso() {
+    Curso c;
+    printf("Ingrese el código del curso: ");
+    scanf(" %s", c.codigo);
+    printf("Ingrese el código de la materia: ");
+    scanf(" %s", c.codigoMateria);
+    printf("Ingrese la cédula del profesor: ");
+    scanf(" %s", c.ccProfesor);
+    printf("Ingrese la fecha de inicio (dd/mm/yyyy): ");
+    scanf(" %s", c.fechaInicio);
+    printf("Ingrese la fecha de fin (dd/mm/yyyy): ");
+    scanf(" %s", c.fechaFin);
+
+    c.matriculasEstudiantes[0] = '\0'; // No hay estudiantes por defecto
+
+    // Verificar que el curso no exista
+    for (int i = 0; i < cursoCount; i++) {
+        if (strcmp(c.codigo, cursos[i].codigo) == 0) {
+            printf("El curso ya existe.\n");
+            return;
+        }
+    }
+
+    cursos[cursoCount++] = c;
+    printf("Curso creado exitosamente.\n");
+    guardarCursos();  // Guardar los datos inmediatamente en el archivo
+}
+
+// Editar Curso
+void editarCurso() {
+    char codigo[20];
+    printf("Ingrese el código del curso a editar: ");
+    scanf(" %s", codigo);
+
+    for (int i = 0; i < cursoCount; i++) {
+        if (strcmp(cursos[i].codigo, codigo) == 0) {
+            printf("Curso encontrado: %s\n", cursos[i].codigo);
+            printf("Cambiar fecha de inicio: ");
+            scanf(" %s", cursos[i].fechaInicio);
+            printf("Cambiar fecha de fin: ");
+            scanf(" %s", cursos[i].fechaFin);
+            printf("Curso actualizado.\n");
+            guardarCursos();  // Guardar los datos inmediatamente en el archivo
+            return;
+        }
+    }
+    printf("Curso no encontrado.\n");
+}
+
+// Funciones para leer y guardar en archivos
+void leerMaterias() {
+    FILE *file = fopen("materias.txt", "r");
+    if (file == NULL) return; // No hacer nada si el archivo no existe
+    while (fscanf(file, "%[^/]/%[^/]/%d\n", materias[materiaCount].codigo, materias[materiaCount].nombre, &materias[materiaCount].estado) == 3) {
+        materiaCount++;
+    }
+    fclose(file);
+}
+
+void guardarMaterias() {
+    FILE *file = fopen("materias.txt", "w");
+    if (file == NULL) return;
+    for (int i = 0; i < materiaCount; i++) {
+        fprintf(file, "%s/%s/%d\n", materias[i].codigo, materias[i].nombre, materias[i].estado);
+    }
+    fclose(file);
+}
+
+void leerEstudiantes() {
+    FILE *file = fopen("estudiantes.txt", "r");
+    if (file == NULL) return;
+    while (fscanf(file, "%[^/]/%[^/]/%[^/]/%[^/]/%[^/]/%d\n", estudiantes[estudianteCount].matricula, estudiantes[estudianteCount].nombres, estudiantes[estudianteCount].apellidos, estudiantes[estudianteCount].usuario, estudiantes[estudianteCount].clave, &estudiantes[estudianteCount].estado) == 6) {
+        estudianteCount++;
+    }
+    fclose(file);
+}
+
+void guardarEstudiantes() {
+    FILE *file = fopen("estudiantes.txt", "w");
+    if (file == NULL) return;
+    for (int i = 0; i < estudianteCount; i++) {
+        fprintf(file, "%s/%s/%s/%s/%s/%d\n", estudiantes[i].matricula, estudiantes[i].nombres, estudiantes[i].apellidos, estudiantes[i].usuario, estudiantes[i].clave, estudiantes[i].estado);
+    }
+    fclose(file);
+}
+
+void leerProfesores() {
+    FILE *file = fopen("profesores.txt", "r");
+    if (file == NULL) return;
+    while (fscanf(file, "%[^/]/%[^/]/%[^/]/%[^/]/%[^/]/%d/%[^\n]\n", profesores[profesorCount].cc, profesores[profesorCount].nombres, profesores[profesorCount].apellidos, profesores[profesorCount].usuario, profesores[profesorCount].clave, &profesores[profesorCount].estado, profesores[profesorCount].materias) == 7) {
+        profesorCount++;
+    }
+    fclose(file);
+}
+
+void guardarProfesores() {
+    FILE *file = fopen("profesores.txt", "w");
+    if (file == NULL) return;
+    for (int i = 0; i < profesorCount; i++) {
+        fprintf(file, "%s/%s/%s/%s/%s/%d/%s\n", profesores[i].cc, profesores[i].nombres, profesores[i].apellidos, profesores[i].usuario, profesores[i].clave, profesores[i].estado, profesores[i].materias);
+    }
+    fclose(file);
+}
+
+void leerCursos() {
+    FILE *file = fopen("cursos.txt", "r");
+    if (file == NULL) return;
+    while (fscanf(file, "%[^/]/%[^/]/%[^/]/%[^/]/%[^/]/%[^\n]\n", cursos[cursoCount].codigo, cursos[cursoCount].codigoMateria, cursos[cursoCount].ccProfesor, cursos[cursoCount].fechaInicio, cursos[cursoCount].fechaFin, cursos[cursoCount].matriculasEstudiantes) == 6) {
+        cursoCount++;
+    }
+    fclose(file);
+}
+
+void guardarCursos() {
+    FILE *file = fopen("cursos.txt", "w");
+    if (file == NULL) return;
+    for (int i = 0; i < cursoCount; i++) {
+        fprintf(file, "%s/%s/%s/%s/%s/%s\n", cursos[i].codigo, cursos[i].codigoMateria, cursos[i].ccProfesor, cursos[i].fechaInicio, cursos[i].fechaFin, cursos[i].matriculasEstudiantes);
+    }
+    fclose(file);
 }
