@@ -417,14 +417,45 @@ void guardarProfesores() {
     fclose(file);
 }
 
+int obtenerEstadoEstudiante(char *matricula) {
+    for (int i = 0; i < num_estudiantes_totales; i++) {
+        if (strcmp(estudiantes[i].matricula, matricula) == 0) {
+            return estudiantes[i].estado; // Retorna 0 si activo, 1 si inactivo
+        }
+    }
+    printf("Estudiante no encontrado\n");
+    return -1; 
+}
+
 void leerCursos() {
     FILE *file = fopen("cursos.txt", "r");
-    if (file == NULL) return;
-    while (fscanf(file, "%[^/]/%[^/]/%[^/]/%[^/]/%[^/]/%[^\n]\n", cursos[cursoCount].codigo, cursos[cursoCount].codigoMateria, cursos[cursoCount].ccProfesor, cursos[cursoCount].fechaInicio, cursos[cursoCount].fechaFin, cursos[cursoCount].matriculasEstudiantes) == 6) {
-        cursoCount++;
-    }
-    fclose(file);
-}
+    if (file != NULL) {
+        while (fscanf(file, "%[^-]-%[^-]-%[^-]-%[^-]-%[^-]-%[^\n]",
+                      cursos[num_cursos].codigo,
+                      cursos[num_cursos].materia,
+                      cursos[num_cursos].profesor,
+                      cursos[num_cursos].fecha_inicio,
+                      cursos[num_cursos].fecha_fin,
+                      buffer) != EOF) {
+
+        
+            char *token = strtok(buffer, "/");
+            int i = 0;
+            while (token != NULL) {
+                // Verificar si el estudiante está activo
+                if (obtenerEstadoEstudiante(token) == 0) {
+                    strcpy(cursos[num_cursos].estudiantes[i++].matricula, token);
+                }
+                token = strtok(NULL, "/");
+            }
+            cursos[num_cursos].num_estudiantes = i; 
+
+            num_cursos++; 
+        }
+        fclose(file);
+    } else {
+        printf("Error al abrir el archivo.\n");
+    }}
 
 void guardarCursos() {
     FILE *file = fopen("cursos.txt", "w");
