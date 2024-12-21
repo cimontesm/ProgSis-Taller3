@@ -311,8 +311,16 @@ void editarProfesor() {
     }
     printf("Profesor no encontrado.\n");
 }
+int obtenerEstadoEstudiante(char *matricula) {
+    for (int i = 0; i < estudianteCount; i++) {
+        if (strcmp(estudiantes[i].matricula, matricula) == 0) {
+            return estudiantes[i].estado; // Retorna 1 si activo, 0 si inactivo
+        }
+    }
+    return -1; // No encontrado
+}
 
-// Crear Curso
+// Función para crear un curso
 void crearCurso() {
     Curso c;
     printf("Ingrese el código del curso: ");
@@ -326,8 +334,6 @@ void crearCurso() {
     printf("Ingrese la fecha de fin (dd/mm/yyyy): ");
     scanf(" %s", c.fechaFin);
 
-    c.matriculasEstudiantes[0] = '\0'; // No hay estudiantes por defecto
-
     // Verificar que el curso no exista
     for (int i = 0; i < cursoCount; i++) {
         if (strcmp(c.codigo, cursos[i].codigo) == 0) {
@@ -336,10 +342,46 @@ void crearCurso() {
         }
     }
 
+    char buffer[1000];
+    printf("Ingrese las matrículas de los estudiantes (separadas por '/'): ");
+    scanf(" %[^\n]s", buffer);
+
+    // Procesar las matrículas
+    char matriculasEstudiantes[500] = ""; 
+    char *token = strtok(buffer, "/");
+    int estudiantesAgregados = 0;
+
+    while (token != NULL) {
+        int estadoEstudiante = obtenerEstadoEstudiante(token);
+
+        if (estadoEstudiante == 1) { // Solo agregar si está activo
+            if (estudiantesAgregados > 0) {
+                strcat(matriculasEstudiantes, "/");
+            }
+            strcat(matriculasEstudiantes, token); // Concatenar matrícula
+            estudiantesAgregados++;
+        } else if (estadoEstudiante == 0) {
+            printf("El estudiante con matrícula %s está inactivo y no será agregado.\n", token);
+        } else {
+            printf("El estudiante con matrícula %s no se encontró en el sistema.\n", token);
+        }
+
+        token = strtok(NULL, "/");
+    }
+
+    
+    strcpy(c.matriculasEstudiantes, matriculasEstudiantes);
+
+    /
     cursos[cursoCount++] = c;
-    printf("Curso creado exitosamente.\n");
+    printf("Curso creado exitosamente con %d estudiantes activos.\n", estudiantesAgregados);
+
     guardarCursos();  // Guardar los datos inmediatamente en el archivo
 }
+
+
+
+
 
 // Editar Curso
 void editarCurso() {
@@ -417,15 +459,7 @@ void guardarProfesores() {
     fclose(file);
 }
 
-int obtenerEstadoEstudiante(char *matricula) {
-    for (int i = 0; i < num_estudiantes_totales; i++) {
-        if (strcmp(estudiantes[i].matricula, matricula) == 0) {
-            return estudiantes[i].estado; // Retorna 0 si activo, 1 si inactivo
-        }
-    }
-    printf("Estudiante no encontrado\n");
-    return -1; 
-}
+
 
 void leerCursos() {
     FILE *file = fopen("cursos.txt", "r");
@@ -456,12 +490,31 @@ void leerCursos() {
     } else {
         printf("Error al abrir el archivo.\n");
     }}
-
 void guardarCursos() {
     FILE *file = fopen("cursos.txt", "w");
-    if (file == NULL) return;
-    for (int i = 0; i < cursoCount; i++) {
-        fprintf(file, "%s/%s/%s/%s/%s/%s\n", cursos[i].codigo, cursos[i].codigoMateria, cursos[i].ccProfesor, cursos[i].fechaInicio, cursos[i].fechaFin, cursos[i].matriculasEstudiantes);
+    if (file != NULL) {
+        for (int i = 0; i < cursoCount; i++) {
+            fprintf(file, "%s-%s-%s-%s-%s",
+                    cursos[i].codigo,
+                    cursos[i].codigoMateria,
+                    cursos[i].ccProfesor,
+                    cursos[i].fechaInicio,
+                    cursos[i].fechaFin);
+            // Guardar las matrículas de los estudiantes activos
+            for (int j = 0; j < cursos[i].num_estudiantes; j++) {
+                if (j == 0) {
+                    fprintf(file, "-%s", cursos[i].matriculasEstudiantes[j]);
+                } else {
+                    fprintf(file, "/%s", cursos[i].matriculasEstudiantes[j]);
+                }
+            }
+            fprintf(file, "\n"); // Nueva línea al final de cada curso
+        }
+        fclose(file);
+    } else {
+        printf("Error al abrir el archivo para guardar los cursos.\n");
     }
-    fclose(file);
 }
+
+
+
